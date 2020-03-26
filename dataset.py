@@ -19,7 +19,7 @@ columns = [
     "dead"
 ]
 
-# 读取头条数据
+# read data
 use_toutiao_date = "2020-02-09"
 toutiao_forum = requests.get("https://i.snssdk.com/forum/home/v1/info/?forum_id=1656784762444839").json()
 toutiao_data = json.loads(toutiao_forum["forum"]["extra"]["ncov_string_list"])
@@ -69,8 +69,6 @@ for province in toutiao_data["provinces"]:
                 "cured": province_history["curesNum"],
                 "dead": province_history["deathsNum"]
             })
-        # else:
-        #     print(f"""忽略{province_history["date"]}{province["name"]}数据""")
 
 data_list.append({
     "date": data_date,
@@ -101,8 +99,6 @@ for cn_history in toutiao_data["nationwide"]:
             "cured": cn_history["curesNum"],
             "dead": cn_history["deathsNum"]
         })
-    # else:
-    #     print(f"""忽略{cn_history["date"]}全国数据""")
 
 for country in toutiao_data["world"]:
     data_list.append({
@@ -114,7 +110,7 @@ for country in toutiao_data["world"]:
         "dead": country["deathsNum"]
     })
 
-# 更新数据
+# update data
 csv_file = "Wuhan-2019-nCoV.csv"
 json_file = "Wuhan-2019-nCoV.json"
 xlsx_file = "Wuhan-2019-nCoV.xlsx"
@@ -134,7 +130,7 @@ df["confirmed"] = df["confirmed"].fillna(0).astype(int)
 df["suspected"] = df["suspected"].fillna(0).astype(int)
 df["cured"] = df["cured"].fillna(0).astype(int)
 df["dead"] = df["dead"].fillna(0).astype(int)
-# 修正数据
+# fix data
 df["countryCode"] = df.apply(
     lambda x: get_country_code(x.country), axis=1)
 df["provinceCode"] = df.apply(
@@ -152,4 +148,4 @@ df.to_csv(csv_file, index=False, encoding='utf-8')
 df.to_json(json_file, orient="records", force_ascii=False)
 df.to_excel(xlsx_file, index=False)
 
-print(f"""{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}数据更新成功""")
+print(f"""{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} : Data update completed. """)
