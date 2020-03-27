@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import getfiles as g
 from scipy.stats import linregress
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, minimize
 
 
 def sigmoidfit(mydf):
@@ -36,30 +36,43 @@ def optimise(mydf):
 
     print('\n---------Doing an optimise---------')
     params = [0.4, 0.1, 0.2]
-    Shat, Ihat, Rhat = sir(mydf, params)
+    Shat, Ihat, Rhat = sir(mydf, *params)
     S = mydf.loc[:, 'suspected']
     I = mydf.loc[:, 'confirmed']
     R = mydf.loc[:, 'cured']
+    xdata = range(0, mydf.shape[0])
 
-    def geterror(Shat, Ihat, Rhat, S, I, R):
-        etots = 0
+    def errors(S, I, R, Shat, Ihat, Rhat):
+        error = 0
         for time in range(0, mydf.shape[0]):
             es = (S - Shat)**2
             ei = (I - Ihat)**2
             er = (R - Rhat)**2
-            etots = etots + (es + ei + er)
-        return etots
+            error = error + (es + ei + er)
+        return error
 
-    etots = geterror(Shat, Ihat, Rhat, S, I, R)
+    etots = errors(S, I, R, Shat, Ihat, Rhat)
+    popt, pcov = minimize(errors, S, I, R, *params)
+    estShat, estIhat, estRhat = popt
+    print('popt is: ', popt, sep='\n')
 
+    y_fitted = errors(S, I, R, estShat, estIhat, estRhat)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(xdata, S, 'o', alpha=0.3, label='samples')
+    ax.plot(xdata, y_fitted, '--', label='fitted')
+    plt.title('Wuhan Confirmed Cases---Sigmoid Fit')
+    ax.legend()
+    ax.show()
 
+    return popt, pcov
 
 
 def sir(mydf, alpha=.4, beta=.1, gamma=.2, mu=0):
 
     print('\n---------Doing a SIR---------')
     dt = 0.0001
-    Nsteps = 10000
+    Nsteps = mydf.shape[0]
     N = 100
     I0, R0 = 1, 1
     S0 = N - I0 - R0
@@ -117,6 +130,7 @@ def main():
     df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
     slope, intercept, r_value, p_value, std_err, plt = linlog_fit(df_wuhan, 'only pre-quarantine')
     popt, pcov = sigmoidfit(df_wuhan)
+    popt, pcov = optimise(df_wuhan)
 
 if __name__ == "__main__":
     main()
