@@ -32,35 +32,46 @@ def sigmoidfit(mydf):
     return popt, pcov
 
 
-def optimise(mydf):
+def geterror(params):
+    S, I, R, Shat, Ihat, Rhat = getsir(params)
+    print('params', params)
+    error = 0
+    for t in range(0, len(S)):
+        es = (S[t] - Shat[t])**2
+        ei = (I[t] - Ihat[t])**2
+        er = (R[t] - Rhat[t])**2
+        error = error + (es + ei + er)
+    error = error/(3*len(S))
+    print(error/1000000)
+    return error
+
+
+def getsir(params):
+
+    df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
+    mydf = df_wuhan
+    N = 11.08E+6
+    I = mydf.loc[:, 'confirmed'].values
+    R = mydf.loc[:, 'cured'].values
+    S = N - I - R
+    Shat, Ihat, Rhat = sir(mydf, *params)
+
+    return S, I, R, Shat, Ihat, Rhat
+
+
+def optimise():
 
     print('\n---------Doing an optimise---------')
-    params = [0.4, 0.1, 0.2]
-    Shat, Ihat, Rhat = sir(mydf, *params)
-    S = mydf.loc[:, 'suspected']
-    I = mydf.loc[:, 'confirmed']
-    R = mydf.loc[:, 'cured']
-    xdata = range(0, mydf.shape[0])
-
-    def errors(S, I, R, Shat, Ihat, Rhat):
-        error = 0
-        for time in range(0, mydf.shape[0]):
-            es = (S - Shat)**2
-            ei = (I - Ihat)**2
-            er = (R - Rhat)**2
-            error = error + (es + ei + er)
-        return error
-
-    etots = errors(S, I, R, Shat, Ihat, Rhat)
-    popt, pcov = minimize(errors, S, I, R, *params)
-    estShat, estIhat, estRhat = popt
+    param0 = [0.5, 1, 0.2]
+    popt, pcov = minimize(geterror, param0)
+    estalpha, estbeta, estgamma = popt
     print('popt is: ', popt, sep='\n')
-
-    y_fitted = errors(S, I, R, estShat, estIhat, estRhat)
+    S, I, R, Shat, Ihat, Rhat = getsir(popt)
     fig = plt.figure()
+    xdata = range(0, len(S))
     ax = fig.add_subplot(111)
-    ax.plot(xdata, S, 'o', alpha=0.3, label='samples')
-    ax.plot(xdata, y_fitted, '--', label='fitted')
+    ax.plot(xdata, I, 'o', alpha=0.3, label='samples')
+    ax.plot(xdata, Ihat, '--', label='fitted')
     plt.title('Wuhan Confirmed Cases---Sigmoid Fit')
     ax.legend()
     ax.show()
@@ -71,9 +82,11 @@ def optimise(mydf):
 def sir(mydf, alpha=.4, beta=.1, gamma=.2, mu=0):
 
     print('\n---------Doing a SIR---------')
-    dt = 0.0001
-    Nsteps = mydf.shape[0]
+    dt = 0.1
+    fill=int(1/dt)
+    Nsteps = mydf.shape[0]*fill
     N = 100
+    #N = 11.08E+6
     I0, R0 = 1, 1
     S0 = N - I0 - R0
     S = np.zeros(Nsteps)
@@ -84,26 +97,26 @@ def sir(mydf, alpha=.4, beta=.1, gamma=.2, mu=0):
     R[0] = R0
 
     def ode(s, i, r):
-        dS = -beta * s * i + gamma * r
-        dI = beta * s * i - alpha * i
-        # dI = beta * s * i - alpha * i - mu * i
+        dS = -beta * (s * i) / N + gamma * r
+        dI = beta * (s * i) / N - alpha * i - mu * i
         dR = alpha * i - gamma * r
         return dt * dS, dt * dI, dt * dR
 
     for n in np.arange(1, Nsteps):
-        V = [S[n - 1], I[n - 1], R[n - 1]]
-        S[n], I[n], R[n] = map(sum, zip(V, ode(S[n - 1], I[n - 1], R[n - 1])))
+        stemp = S[n - 1]
+        itemp = I[n - 1]
+        rtemp = R[n - 1]
+        for k in range(0, fill):
+            ds, di, dr = ode(stemp, itemp, rtemp)
+            stemp = stemp + ds
+            itemp = itemp + di
+            rtemp = rtemp + dr
+        S[n] = stemp
+        I[n] = itemp
+        R[n] = rtemp
 
     t = dt * np.arange(Nsteps)
-
-    plt.figure()
-    plt.plot(t, S, label='Susp')
-    plt.plot(t, I, label='Inft')
-    plt.plot(t, R, label='Recv')
-    plt.title('SIR')
-    plt.legend()
-    plt.show()
-
+    print('stop doing a SIR')
     return S, I, R
 
 
@@ -130,7 +143,7 @@ def main():
     df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
     slope, intercept, r_value, p_value, std_err, plt = linlog_fit(df_wuhan, 'only pre-quarantine')
     popt, pcov = sigmoidfit(df_wuhan)
-    popt, pcov = optimise(df_wuhan)
+    popt, pcov = optimise()
 
 if __name__ == "__main__":
     main()
