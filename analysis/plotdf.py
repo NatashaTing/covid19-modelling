@@ -41,4 +41,3 @@ for df in g.main():
     fig.show()
     print('------')
     fig.savefig(title)
-print('hello')

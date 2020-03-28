@@ -49,22 +49,41 @@ def geterror(params):
 def getsir(params):
 
     df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
-    mydf = df_wuhan
-    N = 11.08E+6
+    mydf = df_ca
     I = mydf.loc[:, 'confirmed'].values
     R = mydf.loc[:, 'cured'].values
-    S = N - I - R
+    print(R[6])
+    N = np.full(len(I), 37.59E+6)
+    S = N - I
     t = range(0, len(S))
+
+    # -------------check
+    mat = pd.DataFrame(list(zip(S, I, R)), columns=['S', 'I', 'R'])
+    print(mat)
+
+    # -------------plot things
+    fig, axs = plt.subplots(2)
+    fig.suptitle('Wuhan')
+    plt.figure(11)
+    #axs[0].set_yscale('log')
+    #axs[1].set_yscale('log')
+    #axs[0].plot(t, S, label='S')
+    axs[0].plot(t, I, label='I')
+    axs[0].plot(t, R, label='R')
+    axs[0].legend()
     Shat, Ihat, Rhat = sir(mydf, *params)
-
-
-    return S, I, R, Shat, Ihat, Rhat
+    #axs[1].plot(t, Shat, label='Shat')
+    axs[1].plot(t, Ihat, label='Ihat')
+    axs[1].plot(t, Rhat, label='Rhat')
+    plt.title('Doing a SIR')
+    axs[1].legend()
+    fig.show()
 
 
 def optimise():
 
     print('\n---------Doing an optimise---------')
-    param0 = [0.5, 1, 0.2]
+    param0 = [0.01, 0.15, 0, 0]   # this was a good guess for Canada data
     popt, pcov = minimize(geterror, param0)
     estalpha, estbeta, estgamma, estmu = popt
     print('popt is: ', popt, sep='\n')
@@ -84,11 +103,10 @@ def optimise():
 def sir(mydf, alpha=.5, beta=2, gamma=.001, mu=0.0001):
 
     print('\n---------Doing a SIR---------')
-    dt = 0.1
-    fill=int(1/dt)
-    Nsteps = mydf.shape[0]*fill
-    N = 100
-    #N = 11.08E+6
+    dt = 0.01
+    fill = int(1/dt)
+    Nsteps = mydf.shape[0]
+    N = 37.59E+6
     I0, R0 = 1, 1
     S0 = N - I0 - R0
     S = np.zeros(Nsteps)
@@ -117,9 +135,9 @@ def sir(mydf, alpha=.5, beta=2, gamma=.001, mu=0.0001):
         I[n] = itemp
         R[n] = rtemp
 
-    t = dt * np.arange(Nsteps)
-    print('stop doing a SIR')
+    t = np.arange(Nsteps)
     return S, I, R
+
 
 
 def linlog_fit(mydf, mytitle):
