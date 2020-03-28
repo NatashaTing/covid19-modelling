@@ -1,4 +1,8 @@
 
+
+import matplotlib.pyplot as plt
+import getfiles as g
+
 df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
 
 print(df_wuhan.head(1))
@@ -11,13 +15,17 @@ for df in g.main():
     dead = df.loc[:, 'dead']
     fig, axs = plt.subplots(2, 2)
     print('-----')
-    print(df.shape)
     try:
-        title = "%s, %s, %s" % (df.loc[0, 'countryCode'], df.loc[0, 'provinceCode'], df.loc[0, 'cityCode'])
-        fig.suptitle(title)
+        if not str(df.loc[0, 'provinceCode']) == 'nan':
+            title = "%s %d %d" % (df.loc[0, 'countryCode'], int(df.loc[0, 'provinceCode']), int(df.loc[0, 'cityCode']))
+            fig.suptitle(title)
+        else:
+            title = "%s" % (df.loc[0, 'countryCode'])
+            fig.suptitle(df.loc[0, 'countryCode'])
     except KeyError:
+        title = "%s" % (df.loc[0, 'countryCode'])
         fig.suptitle(df.loc[0, 'countryCode'])
-
+    print(title)
     axs[0, 0].plot(x, sus)
     axs[0, 0].set_title('suspected')
     axs[0, 1].plot(x, conf, 'tab:orange')
@@ -31,7 +39,6 @@ for df in g.main():
     #for ax in axs.flat:
     #    ax.label_outer()
     fig.show()
-    print('this done.------')
-    pngtitle = '{}.png'.format(df.loc[0, 'countryCode'])
-    fig.savefig(pngtitle)
+    print('------')
+    fig.savefig(title)
 print('hello')
