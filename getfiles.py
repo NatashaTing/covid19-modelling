@@ -12,12 +12,13 @@ def getsums(df, regionname):
     suspected = df.groupby("date").suspected.sum()
     cured = df.groupby("date").cured.sum()
     dead = df.groupby("date").dead.sum()
-    cols = ['date', 'regionname', 'confirmed', 'suspected', 'cured', 'dead']
+    cols = ['date', 'countryCode', 'confirmed', 'suspected', 'cured', 'dead']
 
     if len(dates) == len(regionlist) == len(confirmed) == len(suspected) == len(cured) == len(dead):
         try:
+            newindex = range(0, howmany)
             newdf = pd.DataFrame(list(zip(dates, regionlist, confirmed, suspected, cured, dead)),
-                                 columns = cols)
+                                 columns = cols, index=newindex)
             return newdf
         except:
             print('Error creating newdf')
@@ -40,9 +41,10 @@ def main():
     df_wuhan = df[df['cityCode'] == '420100'].loc[:, cols]
     df_ca = df[df['countryCode'] == 'CA'].loc[:, cols]
     df_it = df[df['countryCode'] == 'IT'].loc[:, cols]
-    df_sk = df[df['countryCode'] == 'SK'].loc[:, cols]
+    df_sk = df[df['countryCode'] == 'KR'].loc[:, cols]
     df_sg = df[df['countryCode'] == 'SG'].loc[:, cols]
     df_uk = df[df['countryCode'] == 'GB'].loc[:, cols]
+
     df_cn2 = getsums(df_cn, 'CN')
     df_hubei2 = getsums(df_hubei, 'Hubei')
 

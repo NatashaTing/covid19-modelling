@@ -54,7 +54,9 @@ def getsir(params):
     I = mydf.loc[:, 'confirmed'].values
     R = mydf.loc[:, 'cured'].values
     S = N - I - R
+    t = range(0, len(S))
     Shat, Ihat, Rhat = sir(mydf, *params)
+
 
     return S, I, R, Shat, Ihat, Rhat
 
@@ -64,7 +66,7 @@ def optimise():
     print('\n---------Doing an optimise---------')
     param0 = [0.5, 1, 0.2]
     popt, pcov = minimize(geterror, param0)
-    estalpha, estbeta, estgamma = popt
+    estalpha, estbeta, estgamma, estmu = popt
     print('popt is: ', popt, sep='\n')
     S, I, R, Shat, Ihat, Rhat = getsir(popt)
     fig = plt.figure()
@@ -79,7 +81,7 @@ def optimise():
     return popt, pcov
 
 
-def sir(mydf, alpha=.4, beta=.1, gamma=.2, mu=0):
+def sir(mydf, alpha=.5, beta=2, gamma=.001, mu=0.0001):
 
     print('\n---------Doing a SIR---------')
     dt = 0.1
