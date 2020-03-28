@@ -1,0 +1,8 @@
+for matching I and Ihat, keeping alhpa at 1 and not changing gamma, and  mu. (3 is timescale factor)):
+params = np.array([1, 1.151, 0, 0.1])*3 
+
+
+for matching I and Ihat && D and Dhat, keeping alpha at 1 and not changing gamma.  
+params = np.array([1, 1.05, 0, 0.001])*3
+
+

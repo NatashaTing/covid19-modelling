@@ -33,58 +33,67 @@ def sigmoidfit(mydf):
 
 
 def geterror(params):
-    S, I, R, Shat, Ihat, Rhat = getsir(params)
+    S, I, R, D, Shat, Ihat, Rhat, Dhat = getsir(params)
     print('params', params)
     error = 0
     for t in range(0, len(S)):
-        es = (S[t] - Shat[t])**2
         ei = (I[t] - Ihat[t])**2
-        er = (R[t] - Rhat[t])**2
-        error = error + (es + ei + er)
-    error = error/(3*len(S))
-    print(error/1000000)
+        #er = (R[t] - Rhat[t])**2
+        #ed = (D[t] - Dhat[t])**2
+        error = error + (ei)
+    #error = error/(3*len(S))
+    print(error)
     return error
 
 
 def getsir(params):
 
     df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
-    mydf = df_ca
+    mydf = df_wuhan
     I = mydf.loc[:, 'confirmed'].values
     R = mydf.loc[:, 'cured'].values
-    print(R[6])
+    D = mydf.loc[:, 'dead'].values
     N = np.full(len(I), 37.59E+6)
+    I = I - R - D
     S = N - I
     t = range(0, len(S))
 
+    Shat, Ihat, Rhat = sir(mydf, *params)
+    Dhat = N - Shat - Ihat - Rhat
     # -------------check
-    mat = pd.DataFrame(list(zip(S, I, R)), columns=['S', 'I', 'R'])
-    print(mat)
+    #mat = pd.DataFrame(list(zip(S, I, R)), columns=['S', 'I', 'R'])
+    #print(mat)
 
     # -------------plot things
-    fig, axs = plt.subplots(2)
-    fig.suptitle('Wuhan')
-    plt.figure(11)
-    #axs[0].set_yscale('log')
-    #axs[1].set_yscale('log')
-    #axs[0].plot(t, S, label='S')
-    axs[0].plot(t, I, label='I')
-    axs[0].plot(t, R, label='R')
-    axs[0].legend()
-    Shat, Ihat, Rhat = sir(mydf, *params)
-    #axs[1].plot(t, Shat, label='Shat')
-    axs[1].plot(t, Ihat, label='Ihat')
-    axs[1].plot(t, Rhat, label='Rhat')
-    plt.title('Doing a SIR')
-    axs[1].legend()
-    fig.show()
+    # fig, axs = plt.subplots(2)
+    # fig.suptitle('Wuhan')
+    # plt.figure(11)
+    # #axs[0].set_yscale('log')
+    # #axs[1].set_yscale('log')
+    # #axs[0].plot(t, S, label='S')
+    # axs[0].plot(t, I, label='I')
+    # axs[0].plot(t, R, label='R')
+    # axs[0].legend()
+    # #axs[1].plot(t, Shat, label='Shat')
+    # axs[1].plot(t, Ihat, label='Ihat')
+    # axs[1].plot(t, Rhat, label='Rhat')
+    # plt.title('Doing a SIR')
+    # axs[1].legend()
+    # fig.show()
+
+    #plt.figure()
+    #plt.plot(t, S)
+    #plt.plot(t, Shat)
+    #plt.show()
+    return S, I, R, D, Shat, Ihat, Rhat, Dhat
 
 
 def optimise():
 
     print('\n---------Doing an optimise---------')
     param0 = [0.01, 0.15, 0, 0]   # this was a good guess for Canada data
-    popt, pcov = minimize(geterror, param0)
+    popt, pcov = minimize(geterror, param0,
+                          bounds=((0, None), (0, None), (0, None), (0, None)))
     estalpha, estbeta, estgamma, estmu = popt
     print('popt is: ', popt, sep='\n')
     S, I, R, Shat, Ihat, Rhat = getsir(popt)
@@ -102,7 +111,7 @@ def optimise():
 
 def sir(mydf, alpha=.5, beta=2, gamma=.001, mu=0.0001):
 
-    print('\n---------Doing a SIR---------')
+    print('\n---------Doing an SIR---------')
     dt = 0.01
     fill = int(1/dt)
     Nsteps = mydf.shape[0]

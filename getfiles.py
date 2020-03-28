@@ -18,7 +18,7 @@ def getsums(df, regionname):
         try:
             newindex = range(0, howmany)
             newdf = pd.DataFrame(list(zip(dates, regionlist, confirmed, suspected, cured, dead)),
-                                 columns = cols, index=newindex)
+                                 columns=cols, index=newindex)
             return newdf
         except:
             print('Error creating newdf')
