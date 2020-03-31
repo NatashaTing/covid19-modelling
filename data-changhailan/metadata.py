@@ -3,7 +3,7 @@ from functools import lru_cache
 import pandas as pd
 
 
-# 加载静态数据
+# load stagnant data
 country_code = pd.read_csv("CountryCode.csv")
 china_area_code = pd.read_csv("ChinaAreaCode.csv")
 china_area_code["code"] = china_area_code["code"].astype(str)

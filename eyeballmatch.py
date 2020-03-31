@@ -1,7 +1,9 @@
-
-
+# this is a sheet to simulate the SIR model and inspect its fit with the data
+# lots of plots in this sheet to visually inspect fit
 import matplotlib.pyplot as plt
 import getfiles as g
+
+
 
 df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
 

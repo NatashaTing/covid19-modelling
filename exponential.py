@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# this is the casual exponential fit sheet
+
 def exponential(x, k, x0):
     return np.exp(k * (x - x0))
 

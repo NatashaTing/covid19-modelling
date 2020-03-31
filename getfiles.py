@@ -1,3 +1,4 @@
+# this is the sheet to import dataframes of global COVID-19 data
 import pandas as pd
 import sys
 import os
