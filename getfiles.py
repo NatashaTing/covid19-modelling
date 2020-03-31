@@ -31,10 +31,10 @@ def main():
     cols = ['date', 'countryCode', 'provinceCode', 'cityCode', 'confirmed',
             'suspected', 'cured', 'dead']
 
-    if os.getcwd() == '/Users/zeptinc/Google Drive/UAlberta/Wi2020/MATH371/Project/analysis':
-        df = pd.read_csv('../Wuhan-2019-nCov.csv')
-    elif os.getcwd() == '/Users/zeptinc/Google Drive/UAlberta/Wi2020/MATH371/Project':
+    if os.getcwd() == '/Users/zeptinc/Google Drive/UAlberta/Wi2020/MATH371/Project/data-changhailan':
         df = pd.read_csv('Wuhan-2019-nCov.csv')
+    elif os.getcwd() == '/Users/zeptinc/Google Drive/UAlberta/Wi2020/MATH371/Project':
+        df = pd.read_csv('data-changhailan/Wuhan-2019-nCov.csv')
 
     df_cn = df[df['countryCode'] == 'CN'].loc[:, cols]
     df_hubei = df[df['provinceCode'] == 420000.0].loc[:, cols]
