@@ -5,4 +5,5 @@ params = np.array([1, 1.151, 0, 0.1])*3
 for matching I and Ihat && D and Dhat, keeping alpha at 1 and not changing gamma.  
 params = np.array([1, 1.05, 0, 0.001])*3
 
-
+goodguess for Canadian data:
+param0 = [0.01, 0.15, 0, 0]

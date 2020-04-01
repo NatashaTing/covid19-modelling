@@ -52,7 +52,7 @@ import getfiles as g
 from scipy.stats import linregress
 from scipy.optimize import curve_fit, minimize
 
-params = np.array([1, 2E-2, 0, 0.001])*3
+params = np.array(9.46, 7.76145579E-2)
 #params = [0.71534957, 0.15000557, 0., 0.7088634]
 #
 # def geterror(params):

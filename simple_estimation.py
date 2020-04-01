@@ -8,13 +8,8 @@ from scipy.optimize import curve_fit, minimize
 df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
 mydf = df_wuhan
 
-
-# this is a scratch sheet to check things in sir.py
-
-# N = 37.59E+6
-# params = np.array([1, 2E-2, 0, 0.001, N / 3]) * 3
-# params = [0.71534957, 0.15000557, 0., 0.7088634]
-
+# this is a scratch sheet for estimating parameters with identification used by
+# Anastassopoulo et al at https://doi.org/10.1101/2020.02.11.20022186.
 
 def geterror(params):
     print('Begin geterror')
@@ -51,8 +46,7 @@ def getsir(params):
 
     Shat, Ihat, Rhat = sir(*params)
     Dhat = 1 - Shat - Ihat - Rhat
-    # print('maxI:{}, lastDeath:{}'.format(max(I), D[-1]))
-    # print('maxIhat:{}, lastDHat:{}'.format(max(Ihat), Dhat[-1]))
+
 
     # fig, axs = plt.subplots(2, 2)
     # axs[0, 0].plot(t, S, label='S')
@@ -123,20 +117,34 @@ def sir(beta, mu, I0):
     return S, I, R
 
 
-def optimise():
+def get_beta_mu(mydf):
+
+    I = mydf.loc[:, 'confirmed'].values
+    R = mydf.loc[:, 'cured'].values
+    D = mydf.loc[:, 'dead'].values
+    # D(t) = hatgamma(I(t))
+
+    res = linregress(I, D)
+    est_beta = res[0]
+
+    res = linregress(I, R)
+    est_gamma = res[0]
+
+    print(est_beta, est_gamma)
+    return est_beta, est_gamma
+
+
+def optimise(mydf):
 
     N = 11E+6
     Nbound = N/100
-    # params = [alpha, beta, mu, population/adjustment]*adjustment
-    # param0 = np.array([1, 1.1, 0.001, N / 60]) * 3
-    # ----- try this param
-    # params = [3.86616511, 1.32013381E-1, 1.57541793, 4.41258379E+4]
-    # params=[beta,gamma,N]
-    param0 = np.array([0.01, 0.01, 1E-3])
-    params = [9.46, 7.76E-2, 51321]
-    bound_1 = ((0,10), (0, 10), (0, 1))
-    popt = minimize(geterror, param0, method='L-BFGS-B', bounds=bound_1)
-    print('popt is: ', popt, sep='\n')
+    est_beta, est_gamma = get_beta_mu(mydf)
+    param0 = [0.12]
+    bound_1 = (0,10)
+    res = minimize(geterror, param0, method='L-BFGS-B', bounds=bound_1)
+    print('popt is: ', res, sep='\n')
+    params = [popt.x, est_beta, est_gamma]
+
     S, I, R, D, Shat, Ihat, Rhat, Dhat = getsir(params)
     fig = plt.figure()
     xdata = range(0, len(S))
@@ -171,13 +179,5 @@ def optimise():
     fig.suptitle('Wuhan')
     fig.show()
 
-    # ax.plot(xdata, Ihat, '--', label='fitted')
-    # plt.title('Wuhan Infected Cases---Sigmoid Fit')
-    # ax.legend()
-    # plt.show()
 
-    return popt
-
-optimise()
-
-# df_wuhan.to_csv('df_wuhan.csv')
+optimise(df_wuhan)

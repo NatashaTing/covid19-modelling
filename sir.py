@@ -115,7 +115,9 @@ def sir(mydf, alpha=.5, beta=2, gamma=.001, mu=0.0001):
     dt = 0.01
     fill = int(1/dt)
     Nsteps = mydf.shape[0]
-    N = 37.59E+6
+    N = 37.59E+6  # 11 million Wuhan
+
+    # need to change
     I0, R0 = 1, 1
     S0 = N - I0 - R0
     S = np.zeros(Nsteps)
