@@ -5,6 +5,8 @@ import requests
 import pandas as pd
 from metadata import get_country_code, get_china_province_code, get_china_city_code, get_china_area_name
 
+print('import success.')
+
 columns = [
     "date",
     "country",
