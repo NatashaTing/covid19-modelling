@@ -31,6 +31,7 @@ def main():
 
     cols = ['date', 'countryCode', 'provinceCode', 'cityCode', 'confirmed',
             'suspected', 'cured', 'dead']
+    print('cwd =', os.getcwd())
 
     if os.getcwd() == '/Users/zeptinc/Google Drive/UAlberta/Wi2020/MATH371/Project/data-changhailan':
         df = pd.read_csv('Wuhan-2019-nCov.csv')
