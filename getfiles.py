@@ -39,6 +39,7 @@ def main():
 
     df_cn = df[df['countryCode'] == 'CN'].loc[:, cols]
     df_hubei = df[df['provinceCode'] == 420000.0].loc[:, cols]
+    df_hubei_new = df[df['provinceCode'] == 420000.0 & df['cityCode' == NaN]].loc[:, cols]
     df_wuhan = df[df['cityCode'] == '420100'].loc[:, cols]
     df_ca = df[df['countryCode'] == 'CA'].loc[:, cols]
     df_it = df[df['countryCode'] == 'IT'].loc[:, cols]
@@ -49,8 +50,8 @@ def main():
     df_cn2 = getsums(df_cn, 'CN')
     df_hubei2 = getsums(df_hubei, 'Hubei')
 
-    return df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk
+    return df_hubei, df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk, df
 
 
 if __name__ == "__main__":
-    df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = main()
+    df_hubei, df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk, df= main()

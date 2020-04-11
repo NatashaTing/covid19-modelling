@@ -3,10 +3,13 @@ import matplotlib.pyplot as plt
 import getfiles as g
 from scipy.optimize import minimize, NonlinearConstraint
 from scipy import interpolate
+import pandas as pd
 
-global I, R, D
+global I, R, D, title, population
 df_cn2, df_hubei2, df_wuhan, df_ca, df_it, df_sk, df_sg, df_uk = g.main()
 mydf = df_wuhan
+title = 'Wuhan'
+population = 1.18E+7
 I = mydf.loc[:, 'confirmed'].values
 R = mydf.loc[:, 'cured'].values
 D = mydf.loc[:, 'dead'].values
@@ -50,14 +53,13 @@ def getsir(params):
     S = N - I - R - D
     Shat, Ihat, Rhat = sir(mydf, *params)
     Dhat = N - Shat - Ihat - Rhat
-    print(Dhat[0])
     return S, I, R, D, Shat, Ihat, Rhat, Dhat
 
 
 def optimise():
     """"Optimises parameters to fit real S, I, R, D, data """""
     print('\n---------Doing an optimise---------')
-    global I, R, D
+    global I, R, D, title, population
 
     def constraintf(params):
         alpha = params[0]
@@ -71,13 +73,18 @@ def optimise():
     D_Imax = D[min(where)]
     lb = -(Imax + R_Imax + D_Imax)
     ub = 0
+    minpop = max(I + R + D)
+    print(minpop)
+    maxpop = population
     cons = NonlinearConstraint(constraintf, lb, ub)
-    param0 = np.array([0.5, 0.0, 6E+4])                # Dependent on initial population condition
-    popt = minimize(geterror, param0, bounds=((0, 1), (0, 1), (0, 11.08E+6)), method='trust-constr', constraints=cons)
-    # estalpha, estmu, estn  = popt
+    param0 = np.array([0.5, 0.1, 1E+5])                # Dependent on initial population condition
+    # trust-constr, SLSQP
+    popt = minimize(geterror, param0, bounds=((0, 1), (0, 1), (minpop, maxpop)), method='trust-constr', constraints=cons)
     print('popt is: ', popt, sep='\n')
-    S, I, R, D, Shat, Ihat, Rhat, Dhat = getsir(popt.x)
-    N0 = popt.x[-1]
+    params=popt.x
+    # params=[0.5,0.1,5E+4]
+    S, I, R, D, Shat, Ihat, Rhat, Dhat = getsir(params)
+    N0 = params[-1]
     Dhat = N0 - Shat - Ihat - Rhat
     Imax = max(I)
     where = np.where(I == Imax)[0]
@@ -85,7 +92,7 @@ def optimise():
     k = ((where + 1) / (where_hat + 1))
 
     # plot results to see fit
-    fig = plt.figure()
+
     t = np.arange(len(S))
     that = np.arange(len(Shat))*k
 
@@ -93,30 +100,52 @@ def optimise():
     print('maxIhat:{}, lastDHat:{}'.format(max(Ihat), Dhat[-1]))
 
     fig, axs = plt.subplots(2, 2)
+
     axs[0, 0].plot(t, S, label='S')
     axs[0, 0].plot(that, Shat, linestyle='--', label='Shat')
     axs[0, 0].set_title('Susceptible')
     axs[0, 0].legend()
+    axs[0, 0].set_xlim([0, len(S)])
 
     axs[0, 1].plot(t, I, label='I')
     axs[0, 1].plot(that, Ihat, linestyle='--', label='Ihat')
     axs[0, 1].set_title('Infected')
     axs[0, 1].legend()
+    axs[0, 1].set_xlim([0, len(I)])
 
     axs[1, 0].plot(t, R, label='R')
     axs[1, 0].plot(that, Rhat, linestyle='--', label='Rhat')
     axs[1, 0].set_title('Recovered')
     axs[1, 0].legend()
+    axs[1, 0].set_xlim([0, len(R)])
 
     axs[1, 1].plot(t, D, label='D')
     axs[1, 1].plot(that, Dhat, linestyle='--', label='Dhat')
     axs[1, 1].set_title('Dead')
     axs[1, 1].legend()
+    axs[1, 1].set_xlim([0, len(D)])
 
-    fig.suptitle('Wuhan')
+    alpha = round(params[0]/k[0], 4)
+    beta = round(1/k[0], 4)
+    mu = round(params[1]/k[0], 4)
+    N0 = round(params[-1], 4)
+    r0 = beta/alpha
+
+    xlab = ('α:{}, β:{}, $\mu$:{}, N0:{}, R0: {}, init: {}'.format(alpha, beta, mu, N0, r0, param0))
+    print('alpha', alpha)
+    print('beta', beta)
+    print('mu', mu)
+    print('N0', N0)
+    print('r0', beta/alpha)
+    # plt.xlabel(xlab)
+    # fig.subplots_adjust(bottom=0.5)
+    fig.text(0.5, 0.02, xlab, va='center', ha='center', fontsize=6, clip_on=True)
+    plt.tight_layout()
+
+    fig.suptitle(title)
     fig.show()
 
-    return popt
+    return popt, k
 
 
 def sir(mydf, alpha, mu, N):
@@ -124,7 +153,7 @@ def sir(mydf, alpha, mu, N):
 
     print('\n---------Doing an SIR---------')
     dt = 0.1
-    Nsteps = mydf.shape[0]*10
+    Nsteps = mydf.shape[0]*100
     # N = 37.59E+6  # 11 million Wuhan
     beta = 1
     I0, R0 = 1, 0
@@ -135,7 +164,7 @@ def sir(mydf, alpha, mu, N):
     S[0] = S0
     I[0] = I0
     R[0] = R0
-    print('alpha, mu', alpha, mu)
+    # print('alpha, mu', alpha, mu)
 
     def ode(s, i, r):
         dS = -beta * (s * i) / N
@@ -156,7 +185,8 @@ def sir(mydf, alpha, mu, N):
 
 
 def main():
-    popt = optimise()
+    popt, k = optimise()
+
 
 if __name__ == "__main__":
     main()
