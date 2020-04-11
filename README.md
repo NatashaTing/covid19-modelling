@@ -6,7 +6,7 @@ by Natasha Ting
 University of Alberta 2020
 
 #### SIRD Model
-The fraction of individuals susceptible to contract COVID-19 in a population , $\frac{S}{N} = s$, fraction of infected individuals, $\frac{I}{N} = i$, fraction of removed individuals, $\frac{R}{N} = r$ and fraction of dead, $\frac{D}{N} = d$ change in dynamic described in the following planar system: 
+The fraction of individuals susceptible to contract COVID-19 in a population,<img src="https://render.githubusercontent.com/render/math?math=\frac{S}{N} = s>, fraction of infected individuals, $\frac{I}{N} = i$, fraction of removed individuals, $\frac{R}{N} = r$ and fraction of dead, $\frac{D}{N} = d$ change in dynamic described in the following planar system: 
 \begin{equation}
        \begin{array}{ll}
       \dot{s} = - \beta s i  & \quad s(0) = s_0 \\
