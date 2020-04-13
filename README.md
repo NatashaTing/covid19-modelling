@@ -11,6 +11,9 @@ University of Alberta 2020 <br/>
 ### Objective
 Develope method of estimation of parameters of the SIRD Epidemiology model without assumption of population. 
 
+### Methods
+See https://github.com/NatashaTing/covid19-modelling/blob/master/write/Slides.pdf
+
 ### Result
 Method estimates parameters by fitting the SIRD and SIRDQ model on data. However, it is not robust to the changes in initial guess in N (population) fed to the optimizer.
 
