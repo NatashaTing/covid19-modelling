@@ -23,5 +23,9 @@ Method estimates parameters by fitting the SIRD and SIRDQ model on data. However
 3. `dataset.py` updates daily data from https://github.com/canghailan/Wuhan-2019-nCoV
 
 ### Development
-This repository is under development to optimize speed and to increase robustness. 
+This repository is under development to optimize speed and to increase robustness with regards to parameter N, and to try to estimate without certain shapes of the data. 
+
+
+### Issues
+Results are off when used with matplotplib 3.2.1 version on Python3. Downgrade to 3.1.3 for the results I obtained. 
 
